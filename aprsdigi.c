@@ -769,8 +769,16 @@ rx_flood(struct stuff *s)
     s->out = s->in;		/* copy the input header */
     s->out.ax_digi_call[s->out.ax_next_digi].ax25_call[ALEN] &= ~SSID;
     s->out.ax_digi_call[s->out.ax_next_digi].ax25_call[ALEN] |= ((--wide) << 1)&SSID;
+    /* Handle FLOOD-1 -> FLOOD-0 case */
+    if (wide == 0) {
+      if ((thisflags&(C_IS_FLOODN|C_IS_TRACE)) == (C_IS_FLOODN|C_IS_TRACE)
+	      || ((thisflags&C_IS_FLOOD) && !(thisflags&C_IS_FLOODN)))
+        s->out.ax_digi_call[s->out.ax_next_digi] = Trace_dummy;
+      s->out.ax_digi_call[s->out.ax_next_digi].ax25_call[ALEN] |= REPEATED;
+      }
+
     /* TRACEn-n: insert dummy mycall in front: xmit will put the real one in */
-    if ((thisflags&(C_IS_FLOODN|C_IS_TRACE)) == (C_IS_FLOODN|C_IS_TRACE)) {
+    if (((thisflags&(C_IS_FLOODN|C_IS_TRACE)) == (C_IS_FLOODN|C_IS_TRACE)) && wide) {
       int n;
       if (s->out.ax_n_digis >= AX25_MAX_DIGIS) {
 	fprintf(stderr,"%s: TRACEn-n list overflow. Last digi dropped.\n",
