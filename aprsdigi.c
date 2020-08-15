@@ -795,7 +795,7 @@ rx_flood(struct stuff *s)
     ++s->i->stats.flood;
     if (xmit(s,NULL) < 0) 
       perror("xmit");
-    return 1;
+    result = 1;
   }
   if (Verbose) {
     fprintf(stderr,"Did %s require special flooding handling.\n",
@@ -1052,7 +1052,10 @@ xmit(struct stuff *s, struct interface_list *dupelist)
 	  fclose(of);
       }
       if (Verbose) {
-	fprintf(stderr,"%s: TX: ",l->i->port);
+	char buf[20];
+	time_t tick = time(0);
+	strftime(buf,sizeof(buf),"%T",gmtime(&tick));
+	fprintf(stderr,"%s %s: TX: ",buf,l->i->port);
 	print_it(stderr,&calls,op-(vecl[n]+l->i->taglen),vecl[n]+l->i->taglen);
       }
       ++l->i->stats.tx;
